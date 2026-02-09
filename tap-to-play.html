@@ -6,29 +6,41 @@
   <title>EYJ Audio</title>
   <style>
     html,body{height:100%;margin:0;background:transparent}
+
     #tapLayer{
-      position:fixed; inset:0;
+      position:fixed;
+      inset:0;
       background:transparent;
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
     }
+
+    /* botón abajo centrado */
     #hint{
-      position:fixed; left:16px; bottom:16px;
-      font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      padding:10px 12px; border-radius:999px;
-      background:rgba(255,255,255,.85); border:1px solid rgba(0,0,0,.12);
-      backdrop-filter: blur(6px);
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      font:13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.85);
+      border:1px solid rgba(0,0,0,.12);
+      backdrop-filter:blur(6px);
       opacity:.95;
+      white-space:nowrap;
     }
+
     .hidden{display:none}
   </style>
 </head>
+
 <body>
   <audio id="bg" loop preload="auto">
     <source src="https://ignaciomoreno-ctrl.github.io/EYJ_soundtrack/Audio_EYJBoda.mp3" type="audio/mpeg">
   </audio>
 
-  <div id="tapLayer" aria-label="Activar música"></div>
+  <div id="tapLayer"></div>
   <div id="hint">Toca para activar música</div>
 
   <script>
@@ -41,6 +53,7 @@
     const start = async () => {
       if (started) return;
       started = true;
+
       try {
         audio.volume = 0.9;
         await audio.play();
