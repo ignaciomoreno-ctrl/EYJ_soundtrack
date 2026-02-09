@@ -1,69 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EYJ Audio</title>
-  <style>
-    html,body{height:100%;margin:0;background:transparent}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    #tapLayer{
-      position:fixed;
-      inset:0;
-      background:transparent;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
+<title>Music Layer</title>
 
-    /* botón abajo izquierda */
-    #hint{
-      position:fixed;
-      left:16px;
-      bottom:16px;
-      font:13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      padding:10px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.85);
-      border:1px solid rgba(0,0,0,.12);
-      backdrop-filter:blur(6px);
-      opacity:.95;
-      white-space:nowrap;
-    }
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #F6F3EA;
+    height: 100%;
+    overflow: hidden;
+    font-family: system-ui, sans-serif;
+  }
 
-    .hidden{display:none}
-  </style>
+  /* evita flashes blancos en media */
+  audio, video, canvas {
+    background: transparent;
+  }
+
+  #musicBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  #musicBtn:active {
+    transform: scale(0.96);
+  }
+</style>
 </head>
 
 <body>
-  <audio id="bg" loop preload="auto">
-    <source src="https://ignaciomoreno-ctrl.github.io/EYJ_soundtrack/Audio_EYJBoda.mp3" type="audio/mpeg">
-  </audio>
 
-  <div id="tapLayer"></div>
-  <div id="hint">Music on</div>
+<button id="musicBtn">music on</button>
 
-  <script>
-    const audio = document.getElementById("bg");
-    const tapLayer = document.getElementById("tapLayer");
-    const hint = document.getElementById("hint");
+<audio id="bgMusic" preload="auto" playsinline loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
 
-    let started = false;
+<script>
+const audio = document.getElementById("bgMusic");
+const btn = document.getElementById("musicBtn");
 
-    const start = async () => {
-      if (started) return;
-      started = true;
+let playing = false;
+let busy = false;
 
-      try {
-        audio.volume = 0.9;
-        await audio.play();
-        hint.classList.add("hidden");
-      } catch {
-        started = false;
-      }
-    };
+function updateUI() {
+  btn.textContent = playing ? "music off" : "music on";
+}
 
-    tapLayer.addEventListener("pointerdown", start, { passive:true });
-    tapLayer.addEventListener("touchstart", start, { passive:true });
-  </script>
+async function safePlay() {
+  if (busy) return;
+  busy = true;
+
+  try {
+    audio.load();
+
+    if (audio.readyState < 2) {
+      await new Promise(resolve =>
+        audio.addEventListener("canplay", resolve, { once: true })
+      );
+    }
+
+    await audio.play();
+    playing = true;
+
+  } catch (e) {
+    console.warn("Playback failed:", e);
+    playing = false;
+  }
+
+  updateUI();
+  busy = false;
+}
+
+function stop() {
+  audio.pause();
+  audio.currentTime = 0;
+  playing = false;
+  updateUI();
+}
+
+btn.addEventListener("click", () => {
+  playing ? stop() : safePlay();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && playing && audio.paused) {
+    playing = false;
+    updateUI();
+  }
+});
+
+updateUI();
+</script>
+
 </body>
 </html>
